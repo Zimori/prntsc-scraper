@@ -64,7 +64,7 @@ You can specify the number of images to download with the `-n` or `--num-images`
 python3 scraper.py -n 20
 ```
 
-### OCR Text Search (Optional)
+### OCR Text Search (Optional, supports multiple strings)
 
 You can also search for images containing a specific word or phrase using OCR. Add the `-s` or `--search` option:
 
@@ -72,7 +72,13 @@ You can also search for images containing a specific word or phrase using OCR. A
 python3 scraper.py -n 5 -s "example"
 ```
 
-- The scraper will only save images that contain the specified text (case-insensitive, using OCR).
+To search for multiple words (OR condition), separate them with commas:
+
+```bash
+python3 scraper.py -n 5 -s "cheese,tomato,mustache"
+```
+
+- The scraper will only save images that contain **any** of the specified texts (case-insensitive, using OCR).
 - If you do not provide `-s`, the scraper downloads images normally, without checking for text.
 
 All images will always be saved in a timestamped subfolder under `images/` (e.g., `images/img-YYYYMMDD-HHMMSS/`).
