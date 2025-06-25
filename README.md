@@ -32,21 +32,25 @@ pip install -r requirements.txt
 The Python package `pytesseract` requires the Tesseract OCR engine to be installed on your system.
 
 **Fedora:**
+
 ```bash
 sudo dnf install tesseract
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt install tesseract-ocr
 ```
 
 **macOS (Homebrew):**
+
 ```bash
 brew install tesseract
 ```
 
 **Windows:**
+
 - Download the installer from [UB Mannheim builds](https://github.com/UB-Mannheim/tesseract/wiki).
 - Install and add the installation directory (e.g., `C:\Program Files\Tesseract-OCR`) to your system PATH.
 
@@ -96,6 +100,12 @@ All images will always be saved in a timestamped subfolder under `images/` (e.g.
 5. **Saving:**
    - Images are saved in a subfolder named `img-YYYYMMDD-HHMMSS` under `images/`.
    - The script continues until the requested number of valid images are found.
+
+## Important Warnings
+
+- **prnt.sc can and will block your IP** if you scrape too quickly or too much. If you see repeated HTTP 403 errors, your IP is likely banned or rate-limited. Use a VPN, proxy, or wait before trying again.
+- **The site’s HTML may change.** If the scraper stops working, check the HTML of a prnt.sc page and update the image extraction logic.
+- **There is no guarantee this tool will always work.** Use responsibly and at your own risk.
 
 ## Extending the Scraper
 
