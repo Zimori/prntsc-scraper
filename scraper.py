@@ -6,6 +6,7 @@ import os
 import datetime
 from PIL import Image
 from io import BytesIO
+import argparse
 
 def generate_id():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
@@ -41,14 +42,12 @@ def fetch_prntsc_image(prntsc_id, save_folder=None):
         return img_url
     return None
 
-def main(num_links=10, save_folder=None):
+def run_scraper(num_links=10):
     found = 0
     failed = 0
     now = datetime.datetime.now()
-    subfolder = f"img-{now.strftime('%Y%m%d-%H%M%S')}"
-    if save_folder:
-        save_folder = os.path.join(save_folder, subfolder)
-        os.makedirs(save_folder, exist_ok=True)
+    save_folder = os.path.join('images', f"img-{now.strftime('%Y%m%d-%H%M%S')}")
+    os.makedirs(save_folder, exist_ok=True)
     attempts = 0
     while found < num_links:
         prntsc_id = generate_id()
@@ -62,7 +61,16 @@ def main(num_links=10, save_folder=None):
             failed += 1
     fail_percent = (failed / (found + failed)) * 100 if (found + failed) > 0 else 0
     print(f'Total found: {found}/{attempts} (requested: {num_links})')
-    print(f'Failed: {failed} ({fail_percent:.2f}%)')
+    print(f'Failed: {failed} ({fail_percent:.2f}% of attempts)')
 
 if __name__ == '__main__':
-    main(10, save_folder='images')
+    parser = argparse.ArgumentParser(description='prnt.sc image scraper')
+    default_num_images = 10
+    parser.add_argument('-n', '--num-images', type=int, default=None, help=f'Number of valid images to download (default: {default_num_images})')
+    args = parser.parse_args()
+    if args.num_images is None:
+        print(f'No image number requested, using default value {default_num_images}...')
+        num_images = default_num_images
+    else:
+        num_images = args.num_images
+    run_scraper(num_links=num_images)

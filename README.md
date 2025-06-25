@@ -32,12 +32,13 @@ Run the scraper (default: find 10 images):
 python3 scraper.py
 ```
 
-You can customize the number of images and output folder by editing the `main()` call at the bottom of `scraper.py`:
+You can specify the number of images to download with the `-n` or `--num-images` option:
 
-```python
-if __name__ == '__main__':
-    main(20, save_folder='images')  # Example: find 20 images
+```bash
+python3 scraper.py -n 20
 ```
+
+All images will always be saved in a timestamped subfolder under `images/` (e.g., `images/img-YYYYMMDD-HHMMSS/`).
 
 ## How It Works
 
