@@ -7,6 +7,7 @@ import datetime
 from PIL import Image
 from io import BytesIO
 import argparse
+from tqdm import tqdm
 
 def generate_id():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
@@ -49,16 +50,18 @@ def run_scraper(num_links=10):
     save_folder = os.path.join('images', f"img-{now.strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(save_folder, exist_ok=True)
     attempts = 0
-    while found < num_links:
-        prntsc_id = generate_id()
-        img_url = fetch_prntsc_image(prntsc_id, save_folder=save_folder)
-        attempts += 1
-        if img_url:
-            print(f'Found: https://prnt.sc/{prntsc_id} -> {img_url}')
-            found += 1
-        else:
-            print(f'No image at: https://prnt.sc/{prntsc_id}')
-            failed += 1
+    with tqdm(total=num_links, desc='Downloading images') as pbar:
+        while found < num_links:
+            prntsc_id = generate_id()
+            img_url = fetch_prntsc_image(prntsc_id, save_folder=save_folder)
+            attempts += 1
+            if img_url:
+                print(f'Found: https://prnt.sc/{prntsc_id} -> {img_url}')
+                found += 1
+                pbar.update(1)
+            else:
+                print(f'No image at: https://prnt.sc/{prntsc_id}')
+                failed += 1
     fail_percent = (failed / (found + failed)) * 100 if (found + failed) > 0 else 0
     print(f'Total found: {found}/{attempts} (requested: {num_links})')
     print(f'Failed: {failed} ({fail_percent:.2f}% of attempts)')
