@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import datetime
+from PIL import Image
+from io import BytesIO
 
 def generate_id():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
@@ -20,11 +22,20 @@ def fetch_prntsc_image(prntsc_id, save_folder=None):
         img_url = img['src']
         if save_folder:
             try:
-                img_data = requests.get(img_url, headers=headers).content
+                img_resp = requests.get(img_url, headers=headers)
+                if img_resp.status_code != 200:
+                    return None
+                if not img_resp.headers.get('Content-Type', '').startswith('image/'):
+                    return None
+                # Try to open with PIL to ensure it's a valid image
+                try:
+                    Image.open(BytesIO(img_resp.content)).verify()
+                except Exception:
+                    return None
                 ext = os.path.splitext(img_url)[1].split('?')[0] or '.jpg'
                 filename = f'{prntsc_id}{ext}'
                 with open(os.path.join(save_folder, filename), 'wb') as f:
-                    f.write(img_data)
+                    f.write(img_resp.content)
             except Exception as e:
                 print(f'Error saving {img_url}: {e}')
         return img_url
