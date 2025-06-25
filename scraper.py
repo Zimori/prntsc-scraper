@@ -43,6 +43,7 @@ def fetch_prntsc_image(prntsc_id, save_folder=None):
 
 def main(num_links=10, save_folder=None):
     found = 0
+    failed = 0
     now = datetime.datetime.now()
     subfolder = f"img-{now.strftime('%Y%m%d-%H%M%S')}"
     if save_folder:
@@ -58,7 +59,10 @@ def main(num_links=10, save_folder=None):
             found += 1
         else:
             print(f'No image at: https://prnt.sc/{prntsc_id}')
+            failed += 1
+    fail_percent = (failed / (found + failed)) * 100 if (found + failed) > 0 else 0
     print(f'Total found: {found}/{attempts} (requested: {num_links})')
+    print(f'Failed: {failed} ({fail_percent:.2f}%)')
 
 if __name__ == '__main__':
     main(10, save_folder='images')
