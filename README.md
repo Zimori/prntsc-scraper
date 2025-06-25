@@ -17,12 +17,38 @@ A robust Python tool to scrape and download images from prnt.sc (Lightshot) usin
 - `requests`
 - `beautifulsoup4`
 - `pillow`
+- `tqdm`
+- `pytesseract` (Python wrapper for Tesseract OCR)
+- **Tesseract OCR engine (must be installed separately, see below)**
 
-Install dependencies:
+Install Python dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+### Install Tesseract OCR Engine
+
+The Python package `pytesseract` requires the Tesseract OCR engine to be installed on your system.
+
+**Fedora:**
+```bash
+sudo dnf install tesseract
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt install tesseract-ocr
+```
+
+**macOS (Homebrew):**
+```bash
+brew install tesseract
+```
+
+**Windows:**
+- Download the installer from [UB Mannheim builds](https://github.com/UB-Mannheim/tesseract/wiki).
+- Install and add the installation directory (e.g., `C:\Program Files\Tesseract-OCR`) to your system PATH.
 
 ## Usage
 
@@ -37,6 +63,17 @@ You can specify the number of images to download with the `-n` or `--num-images`
 ```bash
 python3 scraper.py -n 20
 ```
+
+### OCR Text Search (Optional)
+
+You can also search for images containing a specific word or phrase using OCR. Add the `-s` or `--search` option:
+
+```bash
+python3 scraper.py -n 5 -s "example"
+```
+
+- The scraper will only save images that contain the specified text (case-insensitive, using OCR).
+- If you do not provide `-s`, the scraper downloads images normally, without checking for text.
 
 All images will always be saved in a timestamped subfolder under `images/` (e.g., `images/img-YYYYMMDD-HHMMSS/`).
 

@@ -8,6 +8,7 @@ from PIL import Image
 from io import BytesIO
 import argparse
 from tqdm import tqdm
+import pytesseract
 
 def generate_id():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
@@ -43,22 +44,54 @@ def fetch_prntsc_image(prntsc_id, save_folder=None):
         return img_url
     return None
 
-def run_scraper(num_links=10):
+def run_scraper(num_links=10, search_text=None):
     found = 0
     failed = 0
     now = datetime.datetime.now()
     save_folder = os.path.join('images', f"img-{now.strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(save_folder, exist_ok=True)
     attempts = 0
+    from PIL import Image as PILImage
+    from io import BytesIO
+    from tqdm import tqdm
     with tqdm(total=num_links, desc='Downloading images') as pbar:
         while found < num_links:
             prntsc_id = generate_id()
-            img_url = fetch_prntsc_image(prntsc_id, save_folder=save_folder)
+            img_url = fetch_prntsc_image(prntsc_id, save_folder=None)  # Don't save yet
             attempts += 1
             if img_url:
-                print(f'Found: https://prnt.sc/{prntsc_id} -> {img_url}')
-                found += 1
-                pbar.update(1)
+                try:
+                    img_resp = requests.get(img_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    if img_resp.status_code == 200 and img_resp.headers.get('Content-Type', '').startswith('image/'):
+                        img = PILImage.open(BytesIO(img_resp.content))
+                        if search_text:
+                            text = pytesseract.image_to_string(img)
+                            if search_text.lower() in text.lower():
+                                ext = os.path.splitext(img_url)[1].split('?')[0] or '.jpg'
+                                filename = f'{prntsc_id}{ext}'
+                                with open(os.path.join(save_folder, filename), 'wb') as f:
+                                    f.write(img_resp.content)
+                                print(f"[MATCH] Found and saved: https://prnt.sc/{prntsc_id} -> {img_url}")
+                                found += 1
+                                pbar.update(1)
+                            else:
+                                print(f"No match in: https://prnt.sc/{prntsc_id}")
+                                failed += 1
+                        else:
+                            # No search text, just save
+                            ext = os.path.splitext(img_url)[1].split('?')[0] or '.jpg'
+                            filename = f'{prntsc_id}{ext}'
+                            with open(os.path.join(save_folder, filename), 'wb') as f:
+                                f.write(img_resp.content)
+                            print(f'Found: https://prnt.sc/{prntsc_id} -> {img_url}')
+                            found += 1
+                            pbar.update(1)
+                    else:
+                        print(f'No image at: https://prnt.sc/{prntsc_id}')
+                        failed += 1
+                except Exception as e:
+                    print(f'Error processing {img_url}: {e}')
+                    failed += 1
             else:
                 print(f'No image at: https://prnt.sc/{prntsc_id}')
                 failed += 1
@@ -70,10 +103,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='prnt.sc image scraper')
     default_num_images = 10
     parser.add_argument('-n', '--num-images', type=int, default=None, help=f'Number of valid images to download (default: {default_num_images})')
+    parser.add_argument('-s', '--search', type=str, default=None, help='Text to search for in images (OCR)')
     args = parser.parse_args()
     if args.num_images is None:
         print(f'No image number requested, using default value {default_num_images}...')
         num_images = default_num_images
     else:
         num_images = args.num_images
-    run_scraper(num_links=num_images)
+    run_scraper(num_links=num_images, search_text=args.search)
