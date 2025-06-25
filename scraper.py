@@ -43,21 +43,22 @@ def fetch_prntsc_image(prntsc_id, save_folder=None):
 
 def main(num_links=10, save_folder=None):
     found = 0
-    # Create subfolder with format img-YYYYMMDD-HHMMSS
     now = datetime.datetime.now()
     subfolder = f"img-{now.strftime('%Y%m%d-%H%M%S')}"
     if save_folder:
         save_folder = os.path.join(save_folder, subfolder)
         os.makedirs(save_folder, exist_ok=True)
-    for _ in range(num_links):
+    attempts = 0
+    while found < num_links:
         prntsc_id = generate_id()
         img_url = fetch_prntsc_image(prntsc_id, save_folder=save_folder)
+        attempts += 1
         if img_url:
             print(f'Found: https://prnt.sc/{prntsc_id} -> {img_url}')
             found += 1
         else:
             print(f'No image at: https://prnt.sc/{prntsc_id}')
-    print(f'Total found: {found}/{num_links}')
+    print(f'Total found: {found}/{attempts} (requested: {num_links})')
 
 if __name__ == '__main__':
     main(10, save_folder='images')
